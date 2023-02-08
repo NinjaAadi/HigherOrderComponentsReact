@@ -1,4 +1,4 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState,useEffect, Fragment} from 'react';
 import axios  from 'axios';
 const Search = (WrappedComponent,entity) => {
 
@@ -6,69 +6,77 @@ const Search = (WrappedComponent,entity) => {
         constructor(props){
             super(props);
             this.onChange = this.onChange.bind(this);
-            this.componentDidMount = this.componentDidMount.bind(this);
+            this.setData = this.setData.bind(this);
+            this.onChange = this.onChange.bind(this);
         }
         state = {
             data:undefined,
-            filteredData:[],
-            term:"",
+            filteredData:undefined,
             input:""
+        }
+        setData(_data){
+            console.log("Calling setData....");
+            console.log(_data);
+            const curr = {...this.state,data:_data};
+            console.log("Curr is",curr);
+            this.setState(curr);
         }
         componentDidMount(){
             axios.get('https://jsonplaceholder.typicode.com/' + entity).then((_data) => {
-                this.setState({...this.state,data:_data.data})
-                console.log(this.state.data,_data.data);
-                if(entity == 'user'){
-                    this.setState({...this.state,data:<div >{
-                        this.state.data.map((data) => {
-                            return <p key = {data.id}>{data.name}</p>
-                    })} 
-                </div>})
+                if(entity == "users"){
+                    this.setState({...this.state,data:_data.data,filteredData:_data.data.map((d) => {
+                        return <p>{d.name}</p>
+                    })})
                 }
-                if(entity == 'todo'){
-                    this.setState({...this.state,data:<div >{
-                        this.state.data.map((data) => {
-                            return <p key = {data.id}>{data.title}</p>
-                    })} 
-                </div>})
-                }
-                console.log(this.state.data);
+                else{
+                const newTodos = _data.data.map((d) => {
+                    return <p>{d.title}</p>
+                }).slice(0,10);
+                console.log(newTodos);
+                this.setState({...this.state,data:_data.data.slice(0,10),filteredData:newTodos})
+            }
             });
+            
+           
         }
         onChange(e){
-            this.state = this.setState({...this.state,input:e.target.value})
-            if(e.target.value == '') {
-                if(entity == 'user'){
-                    this.setState({...this.state,filteredData:<div >{
-                        this.state.data.map((data) => {
-                            return <p key = {data.id}>{data.name}</p>
-                    })} 
-                </div>})
-                }
-                if(entity == 'todo'){
-                    this.setState({...this.state,filteredData:<div >{
-                        this.state.data.map((data) => {
-                            return <p key = {data.id}>{data.title}</p>
-                    })} 
-                </div>})
-                }
-                return;
-            }
-            this.setState({...this.state,filteredData:this.state.data.filter((d) => {
-                return entity == "user"?d.name.indexOf(this.state.input)>=0:d.title.indexOf(this.state.input);
+            console.log(e.target.value);
+            console.log(this.state.data);
+            const newData = this.state.data.filter((d) => {
+                return entity == "users"? d.name.indexOf(e.target.value)>=0 : d.title.indexOf(e.target.value)>=0;
                 
             }).map((data) => {
-                return entity == "user"?(<p key = {data.id}>{data.name}</p>):(<p key = {data.id}>{data.title}</p>);
-            })})
+                return entity == "users"?(<p key = {data.id}>{data.name}</p>):(<p key = {data.id}>{data.title}</p>);
+            });
+            console.log(newData);
+            this.setState({...this.state,filteredData:newData,input:e.target.value});
+            
+        }
+        getData(){
+            let data;
+            if(entity == 'users'){
+                data = this.state.data.map((d) => {
+                    return <p key = {d.id}>{d.name}</p>
+                })
+                return data;
+            }
+            else{
+                data = this.state.data.map((d) => {
+                    return <p key = {d.id}>{d.title}</p>
+                })
+            }
+            return data;
         }
         render(){
-            
-            <h1>{entity}</h1>
-            return  (<div style = {{backgroundColor:"gold",height :"auto",width:"50%"}}>
+            console.log(this.state);
+            if(this.state.filteredData === undefined) return <div>Wrong</div>
+            return <Fragment>
+                <div style={{width:"50%",backgroundColor:entity == "users"?"orange":"yellow"}}>
                         <p>{entity}</p>
-                        <input type = "search" placeholder={`Search ${entity}`} name = 'input' value = {this.state.term} onChange = {e => this.onChange(e)}></input>
-                        <WrappedComponent filteredData = {this.state.filteredData}></WrappedComponent>
-                    </div>);
+                        <input type = "search" placeholder={`Search ${entity}`} name = 'input' value = {this.state.input} onChange = {e => this.onChange(e)}></input>
+                        <WrappedComponent filteredData = {this.state.input == ''?(this.getData()):this.state.filteredData}></WrappedComponent>
+                    </div>
+            </Fragment>
         }
     }
 }

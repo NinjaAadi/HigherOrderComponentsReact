@@ -1,10 +1,10 @@
 import {useState,useEffect,useRef} from 'react';
 import axios from 'axios';
 import Search from '../HOC/Search';
-const Users = () => {
-    const [users,setUsers] = useState(undefined);
-    const [userList,setUserList] = useState(<p>Loading</p>);
-    const [input,setInput] = useState('');
+const Users = ({filteredData}) => {
+    // const [users,setUsers] = useState(undefined);
+    // const [userList,setUserList] = useState(<p>Loading</p>);
+    // const [input,setInput] = useState('');
 
     // useEffect(() => {
     //     const fetchUsers = async () => {
@@ -40,10 +40,10 @@ const Users = () => {
     //         return <p key = {user.id}>{user.name}</p>
     //     }));
     // }
-    return <div style = {{backgroundColor:"lightgreen",height :"auto",width:"50%"}}>
+    return <div>
         {/* <p>Users</p>
         <input type = "search" placeholder='Search user' name = 'input' value = {input} onChange = {e => onChange(e)}></input> */}
-        {userList}
+        {filteredData}
     </div>
 }
 
